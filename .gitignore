@@ -8,6 +8,7 @@ __pycache__/
 venv/
 env/
 ENV/
+libgen_venv/
 
 # IDE files
 .vscode/
@@ -16,6 +17,6 @@ ENV/
 # Output files
 output/
 local_settings.py
-
+scraper.log
 # Miscellaneous
 .DS_Store

@@ -20,7 +20,7 @@ import local_settings as ls
 logging.basicConfig(filename='scraper.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-def scrape_libgen(keyword, from_page, to_page):
+def scrape_libgen(keyword, from_page=1, to_page=2):
     """
     Scrape the Libgen website for books related to the given keyword.
 
@@ -329,7 +329,6 @@ def save_to_database(cursor, conn, books_list, keyword):
         # Insert data into Book table
         for book in books_list:
             if not book_exists(cursor, book['title']):
-                print(1)
                 cursor.execute("INSERT INTO Book ("
                                "title, year, language, pages, topic, "
                                "about_book, image_file_path, book_file_path) "
@@ -337,7 +336,6 @@ def save_to_database(cursor, conn, books_list, keyword):
                                (book['title'], book['year'], book['language'], book['pages'], book['topic'],
                                 book['about_book'], book['book_image_path'], book['book_file_path'],))
                 conn.commit()
-                print(2)
                 # Fetch the book ID
                 cursor.execute("SELECT id FROM Book WHERE title = %s", (book['title'],))
                 book_id = cursor.fetchone()[0]
@@ -463,6 +461,9 @@ async def main():
 
     This function controls the overall execution flow of the program.
     """
+    cursor = None
+    conn = None
+
     try:
         # CLI argument parsing
         parser = argparse.ArgumentParser(description='Scrape data from website and save in different formats')
@@ -497,8 +498,7 @@ async def main():
         folder_path = create_output_folder(keyword)
 
         print(folder_path)
-        for link in links[1:5]:
-            print(link)
+        for link in links:
             book, response = scrape_books(link)
             download_and_save_file(response, 'htmls', book['title'], folder_path, 'html')
             book['book_image_path'] = download_and_save_file(
@@ -509,7 +509,6 @@ async def main():
                 file_link, 'files', book['title'], folder_path, book['book_file_type']
             )
             book_list.append(book)
-        print(book_list)
         create_database_tables(cursor, conn)
         save_to_database(cursor, conn, book_list, keyword)
         print('data stored in database')
@@ -518,7 +517,8 @@ async def main():
         print(zip_output_folder(folder_path))
 
     except psycopg2.Error as e:
-        conn.rollback()  # Roll back any uncommitted database changes
+        if conn:
+            conn.rollback()  # Roll back any uncommitted database changes
         print(f"Database error occurred: {e}")
         # Handle the database error appropriately, log it, and possibly inform the user.
 
