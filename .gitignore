@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE files
+.vscode/
+.idea/
+
+# Output files
+output/
+local_settings.py
+
+# Miscellaneous
+.DS_Store
